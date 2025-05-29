@@ -53,6 +53,8 @@ def face_rec(frames, p=None, klass=None):
                 count += 1
             else:
                 break
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     return ([], 0) if count == 0 else (temp_face[:count], count)
 
