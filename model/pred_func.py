@@ -10,7 +10,7 @@ from .genconvit import GenConViT
 from decord import VideoReader, cpu
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
+torch.cuda.max_memory_allocated(*device=None* )
 
 def load_genconvit(config, net, ed_weight, vae_weight, fp16):
     model = GenConViT(
@@ -55,6 +55,7 @@ def face_rec(frames, p=None, klass=None):
                 break
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
 
     return ([], 0) if count == 0 else (temp_face[:count], count)
 
