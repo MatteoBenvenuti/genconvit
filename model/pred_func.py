@@ -3,7 +3,6 @@ import os
 import numpy as np
 import cv2
 import torch
-import dlib
 from tqdm import tqdm
 from dataset.loader import normalize_data
 from .genconvit import GenConViT
@@ -29,6 +28,7 @@ def load_genconvit(config, net, ed_weight, vae_weight, fp16):
 
 
 def _face_rec_worker(frames, return_dict):
+    import dlib
     import face_recognition
     temp_face = np.zeros((len(frames), 224, 224, 3), dtype=np.uint8)
     count = 0
