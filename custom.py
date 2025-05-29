@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
     output_file_name= "result.csv"
     root_dir = "./data"
-    fps = 2
+    fps = 3
 
     vids(
         output_file_name,

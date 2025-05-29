@@ -1,0 +1,18 @@
+services:
+  genconvit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./weight:/app/weight
+      - ./data:/app/data
+      - ./custom_results:/app/custom_results
+    stdin_open: true
+    tty: true
+  deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
