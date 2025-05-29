@@ -124,19 +124,32 @@ def compute_num_frames(video_path, fps):
     frame_to_extract = math.floor(duration * fps)
 
     cap.release()
-    return duration, min(frame_to_extract, 400)
+    return duration, frame_to_extract
 
 
-def pred_vid(df, model):
-    x1, x2, x = model(df)
+def pred_vid(df, model, batch_size=8):
+    model.eval()
+    sigmoid = torch.nn.Sigmoid()
+    
+    all_x1 = []
+    all_x2 = []
+    all_x = []
 
     with torch.no_grad():
-        return (
-            torch.sigmoid(x.squeeze()),
-            torch.sigmoid(x1.squeeze()),
-            torch.sigmoid(x2.squeeze()),
-            max_prediction_value(torch.sigmoid(x.squeeze())),
-        )
+        for i in range(0, len(df), batch_size):
+            batch = df[i:i + batch_size]
+            x1, x2, x = model(batch)
+
+            all_x1.append(sigmoid(x1.squeeze()))
+            all_x2.append(sigmoid(x2.squeeze()))
+            all_x.append(sigmoid(x.squeeze()))
+
+    # Concatenazione risultati su batch
+    all_x1 = torch.cat(all_x1, dim=0)
+    all_x2 = torch.cat(all_x2, dim=0)
+    all_x = torch.cat(all_x, dim=0)
+
+    return all_x, all_x1, all_x2, max_prediction_value(all_x)
 
 
 def max_prediction_value(y_pred):
