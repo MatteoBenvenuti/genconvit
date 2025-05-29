@@ -9,7 +9,7 @@ services:
       - ./custom_results:/app/custom_results
     stdin_open: true
     tty: true
-  deploy:
+    deploy:
       resources:
         reservations:
           devices:
