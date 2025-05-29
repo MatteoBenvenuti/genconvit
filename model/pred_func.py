@@ -32,7 +32,7 @@ def load_genconvit(config, net, ed_weight, vae_weight, fp16):
 def face_rec(frames, p=None, klass=None):
     temp_face = np.zeros((len(frames), 224, 224, 3), dtype=np.uint8)
     count = 0
-    mod = "hog"
+    mod = "cnn" if dlib.DLIB_USE_CUDA else "hog"
 
     for _, frame in tqdm(enumerate(frames), total=len(frames)):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
