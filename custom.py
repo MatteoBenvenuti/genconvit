@@ -124,7 +124,7 @@ def compute_num_frames(video_path, fps):
     frame_to_extract = math.floor(duration * fps)
 
     cap.release()
-    return duration, min(frame_to_extract, 500)
+    return duration, min(frame_to_extract, 400)
 
 
 def pred_vid(df, model):
