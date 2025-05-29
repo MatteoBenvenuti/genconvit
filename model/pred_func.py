@@ -1,14 +1,16 @@
-import multiprocessing
 import os
 import numpy as np
 import cv2
 import torch
+import dlib
+import face_recognition
 from tqdm import tqdm
 from dataset.loader import normalize_data
 from .genconvit import GenConViT
 from decord import VideoReader, cpu
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 def load_genconvit(config, net, ed_weight, vae_weight, fp16):
     model = GenConViT(
@@ -27,14 +29,12 @@ def load_genconvit(config, net, ed_weight, vae_weight, fp16):
     return model
 
 
-def _face_rec_worker(frames, return_dict):
-    import dlib
-    import face_recognition
+def face_rec(frames, p=None, klass=None):
     temp_face = np.zeros((len(frames), 224, 224, 3), dtype=np.uint8)
     count = 0
-    mod = "cnn" if dlib.DLIB_USE_CUDA else "hog"
+    mod = "hog"
 
-    for _, frame in enumerate(frames):
+    for _, frame in tqdm(enumerate(frames), total=len(frames)):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         face_locations = face_recognition.face_locations(
             frame, number_of_times_to_upsample=0, model=mod
@@ -44,29 +44,17 @@ def _face_rec_worker(frames, return_dict):
             if count < len(frames):
                 top, right, bottom, left = face_location
                 face_image = frame[top:bottom, left:right]
-                face_image = cv2.resize(face_image, (224, 224), interpolation=cv2.INTER_AREA)
+                face_image = cv2.resize(
+                    face_image, (224, 224), interpolation=cv2.INTER_AREA
+                )
                 face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
+
                 temp_face[count] = face_image
                 count += 1
             else:
                 break
 
-    return_dict["faces"] = temp_face[:count]
-    return_dict["count"] = count
-
-def face_rec(frames, p=None, klass=None):
-    manager = multiprocessing.Manager()
-    return_dict = manager.dict()
-
-    process = multiprocessing.Process(target=_face_rec_worker, args=(frames, return_dict))
-    process.start()
-    process.join()
-
-    # Se il processo fallisce, evita crash
-    if "faces" not in return_dict or "count" not in return_dict:
-        return [], 0
-
-    return return_dict["faces"], return_dict["count"]
+    return ([], 0) if count == 0 else (temp_face[:count], count)
 
 
 def preprocess_frame(frame):
