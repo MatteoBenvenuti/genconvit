@@ -205,6 +205,8 @@ def vids(
     r = 0
     f = 0
     count = 0
+    
+    custom_result_path = os.path.join("./custom_results", output_file_name)
 
     result_custom = []
 
@@ -245,7 +247,7 @@ def vids(
                         "vae": x2.tolist(),
                     }
                 )
-                pd.DataFrame(result_custom).to_csv(output_file_name, index=False)
+                pd.DataFrame(result_custom).to_csv(custom_result_path, index=False)
             else:
                 print(
                     f"Invalid video file: {curr_vid}. Please provide a valid video file."
@@ -254,7 +256,7 @@ def vids(
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 
-    pd.DataFrame(result_custom).to_csv(output_file_name, index=False)
+    pd.DataFrame(result_custom).to_csv(custom_result_path, index=False)
 
     return result
 
