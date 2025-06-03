@@ -1,5 +1,6 @@
 import math
 import os
+import traceback
 import cv2
 import pandas as pd
 import torch
@@ -140,9 +141,9 @@ def pred_vid(df, model, batch_size=8):
             batch = df[i:i + batch_size]
             x1, x2, x = model(batch)
 
-            all_x1.append(sigmoid(x1.squeeze()))
-            all_x2.append(sigmoid(x2.squeeze()))
-            all_x.append(sigmoid(x.squeeze()))
+            all_x1.append(sigmoid(x1.view(-1)))
+            all_x2.append(sigmoid(x2.view(-1)))
+            all_x.append(sigmoid(x.view(-1)))
 
     # Concatenazione risultati su batch
     all_x1 = torch.cat(all_x1, dim=0)
@@ -267,6 +268,7 @@ def vids(
                 )
 
         except Exception as e:
+            print(traceback.format_exc())
             print(f"An error occurred: {str(e)}")
 
     pd.DataFrame(result_custom).to_csv(custom_result_path, index=False)
@@ -280,7 +282,7 @@ if __name__ == "__main__":
     vae_weight = "genconvit_vae_inference"
 
     output_file_name = "result.csv"
-    root_dir = "./data"
+    root_dir = "./data_fix"
     fps = 3
 
     vids(
