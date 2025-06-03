@@ -29,7 +29,7 @@ def load_genconvit(config, net, ed_weight, vae_weight, fp16):
     return model
 
 
-def face_rec(frames, p=None, klass=None):
+def face_rec(frames, n_times=0, p=None, klass=None):
     temp_face = np.zeros((len(frames), 224, 224, 3), dtype=np.uint8)
     count = 0
     mod = "cnn" if dlib.DLIB_USE_CUDA else "hog"
@@ -37,7 +37,7 @@ def face_rec(frames, p=None, klass=None):
     for _, frame in tqdm(enumerate(frames), total=len(frames)):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         face_locations = face_recognition.face_locations(
-            frame, number_of_times_to_upsample=0, model=mod
+            frame, number_of_times_to_upsample=n_times, model=mod
         )
 
         for face_location in face_locations:
@@ -95,9 +95,13 @@ def extract_frames(video_file, frames_nums=15):
     ).asnumpy()  # seek frames with step_size
 
 
-def df_face(vid, num_frames, net):
+def df_face(vid, num_frames, net, max_retry=5):
     img = extract_frames(vid, num_frames)
-    face, count = face_rec(img)
+    n_try = 0
+    count = 0
+    while count == 0 and n_try <= max_retry:
+        face, count = face_rec(img, n_times=n_try)
+        n_try += 1
     return preprocess_frame(face) if count > 0 else []
 
 
